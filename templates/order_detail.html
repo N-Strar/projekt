@@ -1,0 +1,68 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Заявка {{ order.order_number|default('?') }}{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2>Заявка {{ order.order_number|default('?') }}</h2>
+    <a href="{{ url_for('index') }}" class="btn">← К списку</a>
+</div>
+
+<div style="background: white; border: 2px solid #3CB371; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+    <h3>Информация о заявке</h3>
+    <table style="width: 100%;">
+        <tr>
+            <th style="width: 200px; padding: 10px;">Дата создания:</th>
+            <td>{{ order.date_created.strftime('%d.%m.%Y %H:%M') if order.date_created else '—' }}</td>
+        </tr>
+        <tr>
+            <th style="padding: 10px;">Партнер:</th>
+            <td>
+                {% if order.partner %}
+                    <a href="{{ url_for('partner_detail', id=order.partner.id|default(0)) }}">
+                        {{ order.partner.name|default('Партнёр удалён') }}
+                    </a>
+                {% else %}
+                    <span style="color: red;">Партнёр удалён (ID: {{ order.partner_id|default('?') }})</span>
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div style="background: white; border: 2px solid #3CB371; border-radius: 8px; padding: 20px;">
+    <h3>Состав заявки</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Артикул</th>
+                <th>Наименование</th>
+                <th>Количество</th>
+                <th>Цена</th>
+                <th>Акциз</th>
+                <th>Сбор</th>
+                <th>Сумма</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items %}
+            <tr>
+                <td>{{ item.product.article|default('—') }}</td>
+                <td>{{ item.product.name|default('—') }}</td>
+                <td>{{ item.quantity|default(0) }} {{ item.product.unit|default('шт') }}</td>
+                <td>{{ item.price_per_unit|default(0) }} ₽</td>
+                <td>{{ item.product.excise_tax|default(0) }} ₽</td>
+                <td>{{ item.product.license_fee|default(0) }} ₽</td>
+                <td><strong>{{ item.calculate_subtotal()|default(0) }} ₽</strong></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="6" style="text-align: right;"><strong>ИТОГО:</strong></td>
+                <td><strong>{{ order.calculate_total()|default(0) }} ₽</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+{% endblock %}

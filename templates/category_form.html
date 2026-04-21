@@ -1,0 +1,39 @@
+﻿{% extends "base.html" %}
+
+{% block title %}{{ 'Редактирование' if category else 'Добавление' }} категории{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2>{{ '✏️ Редактирование категории' if category else '➕ Добавление новой категории' }}</h2>
+    
+    <form method="POST" onsubmit="return validateForm()">
+        <div class="form-group">
+            <label for="name">Название категории *</label>
+            <input type="text" id="name" name="name" value="{{ category.name if category else '' }}" required
+                   minlength="2" maxlength="255" pattern="[А-Яа-яЁёA-Za-z0-9\s\-]+"
+                   title="Только буквы, цифры, пробелы и дефисы">
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Описание</label>
+            <textarea id="description" name="description" rows="3" maxlength="1000">{{ category.description if category else '' }}</textarea>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{{ '💾 Сохранить' if category else '✅ Добавить' }}</button>
+            <a href="{{ url_for('categories') }}" class="btn">↩️ Отмена</a>
+        </div>
+    </form>
+</div>
+
+<script>
+function validateForm() {
+    const name = document.getElementById('name').value.trim();
+    if (name.length < 2) {
+        alert('Название категории должно содержать минимум 2 символа');
+        return false;
+    }
+    return true;
+}
+</script>
+{% endblock %}

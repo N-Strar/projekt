@@ -1,0 +1,353 @@
+﻿{% extends "base.html" %}
+
+{% block title %}{{ 'Редактирование' if order else 'Новая' }} заявка{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2>{{ '✏️ Редактирование заявки' if order else '➕ Новая заявка' }}</h2>
+    
+    <form method="POST" id="orderForm">
+        <div class="form-group">
+            <label for="partner_id">Партнер *</label>
+            <select id="partner_id" name="partner_id" required>
+                <option value="">— Выберите партнера —</option>
+                {% for partner in partners %}
+                <option value="{{ partner.id|default(0) }}" 
+                        data-discount="{{ partner.discount|default(0) }}"
+                        {% if order and order.partner_id == partner.id %}selected{% endif %}>
+                    {{ partner.name|default('Без имени') }} (скидка: {{ partner.discount|default(0) }}%)
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <h3>Позиции заявки</h3>
+        <div id="items-container">
+            {% if order %}
+                {% for item in order.items %}
+                <div class="order-item" data-item-id="{{ item.id }}">
+                    <select name="product_id[]" required class="product-select" disabled>
+                        <option value="">Выберите товар</option>
+                        {% for product in products %}
+                        <option value="{{ product.id }}" 
+                                data-price="{{ product.base_price }}"
+                                data-excise="{{ product.excise_tax }}"
+                                data-license="{{ product.license_fee }}"
+                                data-name="{{ product.name }}"
+                                {% if item.product_id == product.id %}selected{% endif %}>
+                            {{ product.article }} - {{ product.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    
+                    <input type="number" name="quantity[]" step="0.001" min="0.001" 
+                           value="{{ item.quantity }}" placeholder="Кол-во" 
+                           required disabled class="quantity-input">
+                    
+                    <div class="order-item-price">
+                        <div class="price-container">
+                            <label>Цена за ед.:</label>
+                            <input type="number" name="price[]" step="0.01" min="0" 
+                                   value="{{ item.price_per_unit }}" placeholder="Цена" 
+                                   required disabled class="price-input"
+                                   readonly style="background-color: #f0f0f0;">
+                        </div>
+                        
+                        <div class="total-container">
+                            <label>Итого:</label>
+                            <span class="item-subtotal">{{ item.calculate_subtotal() }} ₽</span>
+                        </div>
+                        
+                        <div class="price-breakdown">
+                            Базовая: {{ item.product.base_price }} ₽ | 
+                            Акциз: {{ item.product.excise_tax }} ₽ | 
+                            Сбор: {{ item.product.license_fee }} ₽
+                            {% if order.partner and order.partner.discount > 0 %}
+                            | Скидка: {{ order.partner.discount }}%
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="order-item">
+                    <select name="product_id[]" required class="product-select">
+                        <option value="">— Выберите товар —</option>
+                        {% for product in products %}
+                        <option value="{{ product.id }}" 
+                                data-price="{{ product.base_price }}"
+                                data-excise="{{ product.excise_tax }}"
+                                data-license="{{ product.license_fee }}"
+                                data-name="{{ product.name }}">
+                            {{ product.article }} - {{ product.name }} ({{ product.base_price }} ₽)
+                        </option>
+                        {% endfor %}
+                    </select>
+                    
+                    <input type="number" name="quantity[]" step="0.001" min="0.001" 
+                           placeholder="Количество" required class="quantity-input">
+                    
+                    <button type="button" class="btn btn-delete" onclick="this.parentElement.remove(); updateGrandTotal();">❌</button>
+                    
+                    <div class="order-item-price">
+                        <div class="price-container">
+                            <label>Цена за ед.:</label>
+                            <input type="number" name="price[]" step="0.01" min="0" 
+                                   placeholder="Цена" required class="price-input" 
+                                   readonly style="background-color: #f0f0f0;">
+                        </div>
+                        
+                        <div class="total-container">
+                            <label>Итого:</label>
+                            <span class="item-subtotal">0.00 ₽</span>
+                        </div>
+                        
+                        <div class="price-breakdown"></div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        {% if not order %}
+        <button type="button" class="btn" onclick="addItem()">➕ Добавить позицию</button>
+        {% endif %}
+        
+        <div class="order-summary" style="margin: 20px 0; padding: 20px; background: #F5FFFA; border: 2px solid #3CB371; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; color: #3CB371;">ИТОГО:</h3>
+                <h2 style="margin: 0; color: #3CB371;" id="grand-total">0.00 ₽</h2>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {% if order %}💾 Сохранить{% else %}✅ Создать заявку{% endif %}
+            </button>
+            <a href="{{ url_for('index') }}" class="btn">↩️ Отмена</a>
+        </div>
+    </form>
+</div>
+
+<script>
+function updateProductInfo(selectElement) {
+    const itemElement = selectElement.closest('.order-item');
+    const priceInput = itemElement.querySelector('.price-input');
+    const priceBreakdown = itemElement.querySelector('.price-breakdown');
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    
+    if (selectedOption && selectedOption.value) {
+        const basePrice = parseFloat(selectedOption.dataset.price) || 0;
+        const excise = parseFloat(selectedOption.dataset.excise) || 0;
+        const license = parseFloat(selectedOption.dataset.license) || 0;
+        
+        priceInput.value = basePrice.toFixed(2);
+        priceInput.readOnly = false;
+        priceInput.style.backgroundColor = '#ffffff';
+        
+        priceBreakdown.innerHTML = `Базовая цена: ${basePrice.toFixed(2)} ₽ | Акциз: ${excise.toFixed(2)} ₽ | Сбор: ${license.toFixed(2)} ₽`;
+    } else {
+        priceInput.value = '';
+        priceInput.readOnly = true;
+        priceInput.style.backgroundColor = '#f0f0f0';
+        priceBreakdown.innerHTML = '';
+    }
+    
+    calculateItemTotal(itemElement);
+    updateGrandTotal();
+}
+
+function calculateItemTotal(itemElement) {
+    const select = itemElement.querySelector('.product-select');
+    const quantityInput = itemElement.querySelector('.quantity-input');
+    const priceInput = itemElement.querySelector('.price-input');
+    const subtotalSpan = itemElement.querySelector('.item-subtotal');
+    
+    const quantity = parseFloat(quantityInput.value) || 0;
+    const price = parseFloat(priceInput.value) || 0;
+    
+    const selectedOption = select.options[select.selectedIndex];
+    const excise = selectedOption && selectedOption.value ? parseFloat(selectedOption.dataset.excise) || 0 : 0;
+    const license = selectedOption && selectedOption.value ? parseFloat(selectedOption.dataset.license) || 0 : 0;
+    
+    const subtotal = (price + excise + license) * quantity;
+    subtotalSpan.textContent = subtotal.toFixed(2) + ' ₽';
+    return subtotal;
+}
+
+function updateGrandTotal() {
+    const items = document.querySelectorAll('.order-item');
+    let grandTotal = 0;
+    items.forEach(item => {
+        grandTotal += calculateItemTotal(item) || 0;
+    });
+    document.getElementById('grand-total').textContent = grandTotal.toFixed(2) + ' ₽';
+}
+
+function addItem() {
+    const container = document.getElementById('items-container');
+    const newItem = document.createElement('div');
+    newItem.className = 'order-item';
+    
+    const firstSelect = document.querySelector('.product-select');
+    const optionsHTML = firstSelect ? firstSelect.innerHTML : '';
+    
+    newItem.innerHTML = `
+        <select name="product_id[]" required class="product-select">
+            ${optionsHTML}
+        </select>
+        
+        <input type="number" name="quantity[]" step="0.001" min="0.001" placeholder="Количество" required class="quantity-input">
+        
+        <button type="button" class="btn btn-delete" onclick="this.parentElement.remove(); updateGrandTotal();">❌</button>
+        
+        <div class="order-item-price">
+            <div class="price-container">
+                <label>Цена за ед.:</label>
+                <input type="number" name="price[]" step="0.01" min="0" placeholder="Цена" required class="price-input" readonly>
+            </div>
+            
+            <div class="total-container">
+                <label>Итого:</label>
+                <span class="item-subtotal">0.00 ₽</span>
+            </div>
+            
+            <div class="price-breakdown"></div>
+        </div>
+    `;
+    container.appendChild(newItem);
+}
+
+document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('product-select')) {
+        updateProductInfo(e.target);
+    }
+});
+
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('quantity-input')) {
+        const itemElement = e.target.closest('.order-item');
+        calculateItemTotal(itemElement);
+        updateGrandTotal();
+    }
+});
+
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('price-input') && !e.target.readOnly) {
+        const itemElement = e.target.closest('.order-item');
+        calculateItemTotal(itemElement);
+        updateGrandTotal();
+        e.target.style.borderColor = '#FFA500';
+        setTimeout(() => {
+            e.target.style.borderColor = '#3CB371';
+        }, 1000);
+    }
+});
+
+document.getElementById('partner_id').addEventListener('change', function() {
+    updateGrandTotal();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.product-select').forEach(select => {
+        if (select.value) {
+            updateProductInfo(select);
+        }
+    });
+    updateGrandTotal();
+});
+</script>
+
+<style>
+.order-item {
+    display: grid;
+    grid-template-columns: 2fr 1fr 0.3fr;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding: 15px;
+    background: white;
+    border: 1px solid #3CB371;
+    border-radius: 8px;
+    align-items: center;
+}
+
+.order-item-price {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 10px;
+    background: #F5FFFA;
+    border-radius: 5px;
+    border-left: 3px solid #3CB371;
+}
+
+.price-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.price-container label {
+    font-weight: bold;
+    color: #3CB371;
+    min-width: 80px;
+}
+
+.price-container input {
+    flex: 1;
+    padding: 8px;
+    border: 2px solid #3CB371;
+    border-radius: 5px;
+    font-weight: bold;
+    background-color: white;
+}
+
+.total-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.total-container label {
+    font-weight: bold;
+    color: #3CB371;
+    min-width: 80px;
+}
+
+.total-container .item-subtotal {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #3CB371;
+    background: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    border: 2px solid #3CB371;
+    min-width: 120px;
+    text-align: right;
+}
+
+.price-breakdown {
+    grid-column: 1 / -1;
+    color: #666;
+    font-size: 0.85em;
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px dashed #3CB371;
+}
+
+@media (max-width: 768px) {
+    .order-item {
+        grid-template-columns: 1fr;
+    }
+    .order-item-price {
+        grid-template-columns: 1fr;
+    }
+    .price-container, .total-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+</style>
+{% endblock %}

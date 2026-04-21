@@ -1,0 +1,89 @@
+﻿{% extends "base.html" %}
+
+{% block title %}{{ 'Редактирование' if partner else 'Добавление' }} партнера{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2>{{ '✏️ Редактирование партнера' if partner else '➕ Новый партнер' }}</h2>
+    
+    <form method="POST" onsubmit="return validateForm()">
+        <div class="form-group">
+            <label for="name">Полное наименование *</label>
+            <input type="text" id="name" name="name" value="{{ partner.name if partner else '' }}" required 
+                   minlength="2" maxlength="255" pattern="[А-Яа-яЁёA-Za-z0-9\s\-\.\,\"\']+"
+                   title="Только буквы, цифры, пробелы и знаки препинания">
+        </div>
+        
+        <div class="form-group">
+            <label for="short_name">Сокращенное наименование</label>
+            <input type="text" id="short_name" name="short_name" value="{{ partner.short_name if partner else '' }}"
+                   maxlength="100">
+        </div>
+        
+        <div class="form-group">
+            <label for="partner_type">Тип партнера</label>
+            <select id="partner_type" name="partner_type">
+                <option value="">— Выберите тип —</option>
+                <option value="ООО" {% if partner and partner.partner_type == 'ООО' %}selected{% endif %}>ООО</option>
+                <option value="ИП" {% if partner and partner.partner_type == 'ИП' %}selected{% endif %}>ИП</option>
+                <option value="АО" {% if partner and partner.partner_type == 'АО' %}selected{% endif %}>АО</option>
+                <option value="ЗАО" {% if partner and partner.partner_type == 'ЗАО' %}selected{% endif %}>ЗАО</option>
+                <option value="ОАО" {% if partner and partner.partner_type == 'ОАО' %}selected{% endif %}>ОАО</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="director">Руководитель</label>
+            <input type="text" id="director" name="director" value="{{ partner.director if partner else '' }}"
+                   pattern="[А-Яа-яЁёA-Za-z\s\-\.]+" title="Только буквы, пробелы, дефисы и точки">
+        </div>
+        
+        <div class="form-group">
+            <label for="phone">Телефон</label>
+            <input type="tel" id="phone" name="phone" value="{{ partner.phone if partner else '' }}"
+                   pattern="[\+d][\d\(\)\-\s]{9,20}" title="Введите номер телефона в формате +7 (123) 456-78-90"
+                   placeholder="+7 (123) 456 78 90">
+            <small>Пример: +7(123)-456-78-90</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="discount">Скидка (%)</label>
+            <input type="number" id="discount" name="discount" step="0.1" min="0" max="100" 
+                   value="{{ partner.discount if partner else '0' }}">
+        </div>
+        
+        <div class="form-group">
+            <label for="actual_address">Фактический адрес</label>
+            <textarea id="actual_address" name="actual_address" rows="2" maxlength="500">{{ partner.actual_address if partner else '' }}</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="legal_address">Юридический адрес</label>
+            <textarea id="legal_address" name="legal_address" rows="2" maxlength="500">{{ partner.legal_address if partner else '' }}</textarea>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{{ '💾 Сохранить' if partner else '✅ Добавить' }}</button>
+            <a href="{{ url_for('partners') }}" class="btn">↩️ Отмена</a>
+        </div>
+    </form>
+</div>
+
+<script>
+function validateForm() {
+    const name = document.getElementById('name').value.trim();
+    if (name.length < 2) {
+        alert('Название партнера должно содержать минимум 2 символа');
+        return false;
+    }
+    
+    const discount = parseFloat(document.getElementById('discount').value);
+    if (isNaN(discount) || discount < 0 || discount > 100) {
+        alert('Скидка должна быть от 0 до 100%');
+        return false;
+    }
+    
+    return true;
+}
+</script>
+{% endblock %}

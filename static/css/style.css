@@ -1,0 +1,262 @@
+﻿* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #F5FFFA;
+    padding: 20px;
+    color: #2F4F4F;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #F0FFF0;
+    border: 2px solid #3CB371;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 2px solid #3CB371;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.logo h1 {
+    color: #3CB371;
+    margin: 0;
+    font-size: 1.8em;
+}
+
+.nav-menu {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    background-color: #F5FFFA;
+    color: #2F4F4F;
+    padding: 8px 16px;
+    text-decoration: none;
+    border: 1px solid #3CB371;
+    border-radius: 5px;
+    transition: all 0.3s;
+    display: inline-block;
+}
+
+.btn:hover {
+    background-color: #3CB371;
+    color: white;
+}
+
+.btn-primary {
+    background-color: #3CB371;
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #2E8B57;
+}
+
+.btn-delete {
+    background-color: #ff6b6b;
+    border-color: #ff0000;
+    color: white;
+}
+
+.btn-delete:hover {
+    background-color: #ff0000;
+}
+
+.btn-small {
+    padding: 4px 8px;
+    font-size: 0.9em;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+th {
+    background-color: #3CB371;
+    color: white;
+    padding: 12px;
+    text-align: left;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid #F0FFF0;
+}
+
+tr:hover {
+    background-color: #F5FFFA;
+}
+
+.actions {
+    display: flex;
+    gap: 5px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.form-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #3CB371;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #3CB371;
+    border-radius: 5px;
+    font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #2E8B57;
+    box-shadow: 0 0 5px rgba(60, 179, 113, 0.5);
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.alert {
+    padding: 12px;
+    margin: 20px 0;
+    border-radius: 5px;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background-color: white;
+    border: 2px dashed #3CB371;
+    border-radius: 8px;
+    margin: 30px 0;
+}
+
+.empty-state p {
+    font-size: 1.2em;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid #3CB371;
+    color: #666;
+}
+
+.status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: bold;
+}
+
+.status-new {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.status-processing {
+    background-color: #fff3e0;
+    color: #f57c00;
+}
+
+.status-ready {
+    background-color: #e8f5e8;
+    color: #388e3c;
+}
+
+.status-shipped {
+    background-color: #e8eaf6;
+    color: #3f51b5;
+}
+
+.status-cancelled {
+    background-color: #ffebee;
+    color: #d32f2f;
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .nav-menu {
+        justify-content: center;
+    }
+    
+    table {
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .actions {
+        flex-direction: column;
+    }
+    
+    .actions .btn {
+        width: 100%;
+    }
+}

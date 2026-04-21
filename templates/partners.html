@@ -1,0 +1,46 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Партнеры{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>🤝 Партнеры</h2>
+    <a href="{{ url_for('new_partner') }}" class="btn btn-primary">➕ Новый партнер</a>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Наименование</th>
+            <th>Тип</th>
+            <th>Руководитель</th>
+            <th>Телефон</th>
+            <th>Сумма заказов</th>
+            <th>Скидка</th>
+            <th>Заявок</th>
+            <th>Действия</th>
+        </thead>
+    <tbody>
+        {% for partner in partners %}
+        {% if partner and partner.id %}
+         <tr>
+            <td>{{ partner.id|default('?') }}</td>
+            <td><strong>{{ partner.name|default('Без имени') }}</strong></td>
+            <td>{{ partner.partner_type|default('—') }}</td>
+            <td>{{ partner.director|default('—') }}</td>
+            <td>{{ partner.phone|default('—') }}</td>
+            <td><strong>{{ "%.2f"|format(partner.total_orders_sum|default(0)) }} ₽</strong></td>
+            <td><strong style="color: #3CB371;">{{ partner.discount|default(0) }}%</strong></td>
+            <td>{{ partner.orders|length|default(0) }}</td>
+            <td class="actions">
+                <a href="{{ url_for('partner_detail', id=partner.id|default(0)) }}" class="btn btn-small">👁️</a>
+                <a href="{{ url_for('edit_partner', id=partner.id|default(0)) }}" class="btn btn-small">✏️</a>
+                <a href="{{ url_for('delete_partner', id=partner.id|default(0)) }}" class="btn btn-small btn-delete" onclick="return confirm('Удалить партнера?')">🗑️</a>
+            </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

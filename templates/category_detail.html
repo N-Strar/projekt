@@ -1,0 +1,43 @@
+﻿{% extends "base.html" %}
+
+{% block title %}{{ category.name }}{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2>{{ category.name }}</h2>
+    <a href="{{ url_for('categories') }}" class="btn">← К списку</a>
+</div>
+
+<div style="background: white; border: 2px solid #3CB371; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+    <h3>Информация о категории</h3>
+    <p><strong>Описание:</strong> {{ category.description or '—' }}</p>
+</div>
+
+<div style="background: white; border: 2px solid #3CB371; border-radius: 8px; padding: 20px;">
+    <h3>Товары в категории</h3>
+    {% if products %}
+    <table>
+        <thead>
+            <tr>
+                <th>Артикул</th>
+                <th>Наименование</th>
+                <th>Цена</th>
+                <th>Алкоголь</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product.article }}</td>
+                <td>{{ product.name }}</td>
+                <td>{{ product.base_price }} ₽</td>
+                <td>{% if product.is_alcohol %}✅{% else %}❌{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>В категории нет товаров</p>
+    {% endif %}
+</div>
+{% endblock %}

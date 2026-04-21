@@ -1,0 +1,52 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Заявки{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>📋 Заявки партнеров</h2>
+    <a href="{{ url_for('new_order') }}" class="btn btn-primary">➕ Новая заявка</a>
+</div>
+
+{% if orders %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Номер</th>
+                    <th>Дата</th>
+                    <th>Партнер</th>
+                    <th>Сумма</th>
+                    <th>Позиций</th>
+                    <th>Действия</th>
+                </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td><strong>{{ order.order_number|default('?') }}</strong>\\
+                    <td>{{ order.date_created.strftime('%d.%m.%Y %H:%M') if order.date_created else '—' }}</td>
+                    <td>
+                        {% if order.partner %}
+                            {{ order.partner.name|default('Без имени') }}
+                        {% else %}
+                            <span style="color: red;">Партнёр удалён</span>
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ order.calculate_total()|default(0) }} ₽</strong></td>
+                    <td>{{ order.items|length|default(0) }}</td>
+                    <td class="actions">
+                        <a href="{{ url_for('order_detail', id=order.id|default(0)) }}" class="btn btn-small">👁️</a>
+                        <a href="{{ url_for('delete_order', id=order.id|default(0)) }}" class="btn btn-small btn-delete" onclick="return confirm('Удалить заявку?')">🗑️</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="empty-state">
+        <p>📭 Нет заявок</p>
+        <a href="{{ url_for('new_order') }}" class="btn btn-primary">➕ Создать первую заявку</a>
+    </div>
+{% endif %}
+{% endblock %}
